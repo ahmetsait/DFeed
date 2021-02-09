@@ -42,7 +42,7 @@ import dfeed.web.web.cache : postCountCache, getPostCounts;
 import dfeed.web.web.page : html;
 import dfeed.web.web.part.gravatar : getGravatarHash, putGravatar;
 import dfeed.web.web.part.pager : THREADS_PER_PAGE, getPageOffset, threadPager, indexToPage, getPageCount, getPageCount, pager;
-import dfeed.web.web.part.strings : summarizeTime, formatNumber, truncateString;
+import dfeed.web.web.part.strings : formatShortTime, formatLongTime, summarizeTime, formatNumber;
 import dfeed.web.web.part.thread : formatThreadedPosts;
 import dfeed.web.web.postinfo : PostInfo, getPostInfo, getPost;
 import dfeed.web.web.statics : staticPath;
@@ -108,65 +108,62 @@ void discussionGroup(GroupInfo groupInfo, int page)
 			threads ~= Thread(firstPostID, getPostInfo(firstPostID), getPostInfo(lastPostID), count, getUnreadPostCount(firstPostID));
 		}
 
-	void summarizeThread(string tid, PostInfo* info, bool isRead)
+	void writeThreadCard(ref Thread thread)
 	{
-		if (info)
-			with (*info)
-			{
-				putGravatar(getGravatarHash(info.authorEmail), idToUrl(tid, "thread"), `class="forum-postsummary-gravatar" `);
-				html.put(
-				//	`<!-- Thread ID: ` ~ encodeHtmlEntities(threadID) ~ ` | First Post ID: ` ~ encodeHtmlEntities(id) ~ `-->` ~
-					`<div class="truncated"><a class="forum-postsummary-subject `, (isRead ? "forum-read" : "forum-unread"), `" href="`), html.putEncodedEntities(idToUrl(tid, "thread")), html.put(`" title="`), html.putEncodedEntities(subject), html.put(`">`), html.putEncodedEntities(subject), html.put(`</a></div>` ~
-					`<div class="truncated">`, _!`by`, ` <span class="forum-postsummary-author" title="`), html.putEncodedEntities(author), html.put(`">`), html.putEncodedEntities(author), html.put(`</span></div>`);
-				return;
-			}
-
-		html.put(`<div class="forum-no-data">-</div>`);
+		html.put(`<div class="thread-card">`);
+			html.put(`<div class="thread-avatar">`);
+				putGravatar(getGravatarHash(thread.firstPost.authorEmail), idToUrl(thread.id, "thread"));
+			html.put(`</div>`);
+			html.put(`<div class="thread-title">`);
+				html.put(`<a `);
+				html.put(`class="`); html.put(thread.isRead ? "forum-read" : "forum-unread"); html.put(`" `);
+				html.put(`href="`); html.putEncodedEntities(idToUrl(thread.id, "thread")); html.put(`" `);
+				html.put(`title="`); html.putEncodedEntities(thread.firstPost.subject); html.put(`">`);
+					html.putEncodedEntities(thread.firstPost.subject);
+				html.put(`</a>`);
+			html.put(`</div>`);
+			html.put(`<div class="thread-info">`);
+				html.put(`<div class="thread-author">`);
+					html.put(`<a class="thread-link" `);
+					html.put(`href="`); html.putEncodedEntities(idToUrl(thread.firstPost.id)); html.put(`">`);
+						html.put(`First Post`);
+					html.put(`</a>`);
+					html.put(`: `);
+					html.put(`<span class="thread-time" `);
+					html.put(`time="`); html.putEncodedEntities(formatLongTime(thread.firstPost.time)); html.put(`">`);
+						html.putEncodedEntities(formatShortTime(thread.firstPost.time, false));
+					html.put(`</span>`);
+					html.put(`<br>by `);
+					html.put(`<span class="thread-author-name">`);
+						html.putEncodedEntities(thread.firstPost.author);
+					html.put(`</span>`);
+				html.put(`</div>`);
+				html.put(`<div class="thread-replies">`);
+					html.put(formatNumber(thread.postCount - 1), (thread.postCount - 1) == 1 ? " reply" : " replies");
+					// if (thread.unreadPostCount && thread.unreadPostCount != thread.postCount)
+						html.put(`<br><a href="`, idToUrl(thread.id, "first-unread"), `">`, formatNumber(thread.unreadPostCount), ` new</a>`);
+				html.put(`</div>`);
+				html.put(`<div class="thread-lastpost">`);
+					html.put(`<a class="thread-lastpost-link" `);
+					html.put(`href="`); html.putEncodedEntities(idToUrl(thread.lastPost.id)); html.put(`">`);
+						html.put(`Last Post`);
+					html.put(`</a>`);
+					html.put(`: `);
+					html.put(`<span class="thread-lastpost-time" `);
+					html.put(`time="`); html.putEncodedEntities(formatLongTime(thread.lastPost.time)); html.put(`">`);
+						html.putEncodedEntities(formatShortTime(thread.lastPost.time, false));
+					html.put(`</span>`);
+					html.put(`<br>by `);
+					html.put(`<span class="thread-lastpost-author" ">`);
+						html.putEncodedEntities(thread.lastPost.author);
+					html.put(`</span>`);
+				html.put(`</div>`);
+			html.put(`</div>`);
+		html.put(`</div>`);
 	}
 
-	void summarizeLastPost(PostInfo* info)
-	{
-		if (info)
-			with (*info)
-			{
-				html.put(
-					`<a class="forum-postsummary-time `, user.isRead(rowid) ? "forum-read" : "forum-unread", `" href="`), html.putEncodedEntities(idToUrl(id)), html.put(`">`, summarizeTime(time), `</a>` ~
-					`<div class="truncated">`, _!`by`, ` <span class="forum-postsummary-author" title="`), html.putEncodedEntities(author), html.put(`">`), html.putEncodedEntities(author), html.put(`</span></div>`);
-				return;
-			}
-		html.put(`<div class="forum-no-data">-</div>`);
-	}
-
-	void summarizePostCount(ref Thread thread)
-	{
-		html.put(`<a class="secretlink" href="`), html.putEncodedEntities(idToUrl(thread.id, "thread")), html.put(`">`);
-		if (thread.unreadPostCount == 0)
-			html ~= formatNumber(thread.postCount-1);
-		else
-			html.put(`<b>`, formatNumber(thread.postCount-1), `</b>`);
-		html.put(`</a>`);
-
-		if (thread.unreadPostCount && thread.unreadPostCount != thread.postCount)
-			html.put(
-				`<br>(<a href="`, idToUrl(thread.id, "first-unread"), `">`, formatNumber(thread.unreadPostCount), ` new</a>)`);
-	}
-
-	html.put(
-		`<table id="group-index" class="forum-table">` ~
-		`<tr class="table-fixed-dummy">`, `<td></td>`.replicate(3), `</tr>` ~ // Fixed layout dummies
-		`<tr class="group-index-header"><th colspan="3"><div class="header-with-tools">`), newPostButton(groupInfo), html.putEncodedEntities(groupInfo.publicName), html.put(`</div></th></tr>` ~
-		`<tr class="subheader"><th>`, _!`Thread / Thread Starter`, `</th><th>`, _!`Last Post`, `</th><th>`, _!`Replies`, `</th>`);
 	foreach (thread; threads)
-		html.put(
-			`<tr class="thread-row">` ~
-				`<td class="group-index-col-first">`), summarizeThread(thread.id, thread.firstPost, thread.isRead), html.put(`</td>` ~
-				`<td class="group-index-col-last">`), summarizeLastPost(thread.lastPost), html.put(`</td>` ~
-				`<td class="number-column">`), summarizePostCount(thread), html.put(`</td>` ~
-			`</tr>`);
-	threadPager(groupInfo, page);
-	html.put(
-		`</table>`
-	);
+		writeThreadCard(thread);
 }
 
 // ***********************************************************************

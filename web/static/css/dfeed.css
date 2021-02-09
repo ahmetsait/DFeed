@@ -394,12 +394,14 @@ div#footernav a {
 	display: block;
 }
 
+/*
 #group-index a.forum-postsummary-gravatar img.post-gravatar {
 	width : 2.2em;
 	height: 2.2em;
 	border-width: 0.3em;
 	margin: 0;
 }
+*/
 
 /*************** Thread view, individual posts ***************/
 
@@ -518,10 +520,12 @@ body.have-javascript .forum-expand-container.open.thread-overview-pager .forum-e
 	font-weight: bold;
 	font-size: 130%;
 }
+/*
 #forum-content a img.post-gravatar {
 	margin: 0.35em;
 	border: 5px solid #E6E6E6;
 }
+*/
 .post-info > hr {
 	border: 1px solid #E6E6E6;
 	border-bottom: none;
@@ -849,10 +853,12 @@ table.mini-post-info {
 	display: none;
 }
 
+/*
 table.mini-post-info a img.post-gravatar {
 	border-width: 3px !important;
 	margin: 0 0.5em;
 }
+*/
 
 table.mini-post-info .post-info-actions {
 	padding: 0.5em;
@@ -1228,6 +1234,7 @@ body {
 	#group-index > tbody > tr > td:nth-child(2) { width: 7em; }
 	#group-index > tbody > tr > td:nth-child(3) { width: 4.5em; white-space: pre; padding: 0; }
 	#group-index a.forum-postsummary-gravatar { display: none; }
+	.thread-avatar { display: none; }
 }
 
 /*************** Frame view ***************/
@@ -1342,11 +1349,10 @@ body.frame .forum-postsummary-gravatar {
 	float: left;
 }
 
-body.frame .post-gravatar {
 /*
+body.frame .post-gravatar {
 	border: 2px solid #444 !important;
 	margin: -2px 5px -2px 0;
-*/
 	border: 0 !important;
 	margin: 0 5px 0 0 !important;
 	width: 32px;
@@ -1355,4 +1361,76 @@ body.frame .post-gravatar {
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	border-radius: 5px;
+}
+*/
+
+.thread-info-container {
+	display: flex;
+}
+
+.thread-list {
+	padding: 5px;
+}
+
+.thread-card {
+	border-bottom: 1px dashed gray;
+	padding: 10px;
+}
+
+.thread-avatar {
+	float: left;
+	border: 0.3em solid #E6E6E6;
+	margin: 0 0.5em 0.25em 0;
+}
+
+.thread-avatar img {
+	width: 2.2em;
+	height: 2.2em;
+}
+
+.thread-title {
+	margin: 0 0 0.25em 0;
+}
+
+.thread-info {
+	font-size: small;
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.thread-time {
+	display: inline-block;
+}
+
+.thread-author {
+	display: table-cell;
+	text-align: left;
+	overflow: hidden;
+}
+
+.thread-author-name {
+	color: gray;
+}
+
+.thread-replies {
+	display: table-cell;
+	text-align: center;
+	width: 8ch;
+	padding: 0 0.5em;
+	overflow: hidden;
+}
+
+.thread-lastpost {
+	display: table-cell;
+	text-align: right;
+	overflow: hidden;
+}
+
+.thread-lastpost-time {
+	display: inline-block;
+}
+
+.thread-lastpost-author {
+	color: gray;
 }
